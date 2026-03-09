@@ -6,6 +6,11 @@ class FunasrOnnx < Formula
   sha256 "64696112eff23194cdb459b9a1d25c4bf21a21f7617c4cc7979fee6febd7eb28"
   license "MIT"
 
+  resource "json" do
+    url "https://github.com/nlohmann/json/archive/refs/tags/v3.11.2.tar.gz"
+    sha256 "d69f9deb6a75e2580465c6c4c5111b89c4dc2fa94e3a85fcd2ffcd9a143d9273"
+  end
+
   depends_on "cmake" => :build
   depends_on "ffmpeg"
   depends_on "gflags"
@@ -17,6 +22,13 @@ class FunasrOnnx < Formula
     runtime_dir = buildpath/"runtime/onnxruntime"
     build_dir = runtime_dir/"build"
     private_lib_dir = libexec/"lib"
+    json_dir = runtime_dir/"third_party/json"
+    rm_r json_dir if json_dir.exist?
+    json_dir.mkpath
+
+    resource("json").stage do
+      json_dir.install Dir["*"]
+    end
     targets = %w[
       funasr-onnx-offline
       funasr-onnx-offline-vad
