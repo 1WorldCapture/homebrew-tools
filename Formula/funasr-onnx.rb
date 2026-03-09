@@ -29,8 +29,12 @@ class FunasrOnnx < Formula
     resource("json").stage do
       json_dir.install Dir["*"]
     end
+
+    inreplace runtime_dir/"third_party/yaml-cpp/CMakeLists.txt",
+              "cmake_policy(SET CMP0015 OLD)",
+              "cmake_policy(SET CMP0015 NEW)"
+
     targets = %w[
-      funasr-onnx-offline
       funasr-onnx-offline-vad
       funasr-onnx-online-vad
       funasr-onnx-online-asr
