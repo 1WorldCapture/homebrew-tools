@@ -103,9 +103,18 @@ class FunasrOnnx < Formula
   end
 
   test do
-    assert_match "USAGE:", shell_output("#{bin}/funasr-onnx-offline --help")
-    assert_match "USAGE:", shell_output("#{bin}/funasr-onnx-online-asr --help")
-    assert_match "USAGE:", shell_output("#{bin}/funasr-onnx-offline-punc --help")
+    %w[
+      funasr-onnx-offline
+      funasr-onnx-offline-vad
+      funasr-onnx-online-vad
+      funasr-onnx-online-asr
+      funasr-onnx-offline-punc
+      funasr-onnx-online-punc
+      funasr-onnx-offline-rtf
+      funasr-onnx-online-rtf
+    ].each do |command|
+      assert_match "USAGE:", shell_output("#{bin}/#{command} --help")
+    end
   end
 
   private
