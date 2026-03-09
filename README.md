@@ -5,7 +5,7 @@ Personal Homebrew tap for source-built macOS tools.
 ## Install
 
 ```bash
-brew tap <owner>/tools
+brew tap 1worldcapture/tools
 brew install funasr-onnx
 ```
 
@@ -25,11 +25,13 @@ Installed commands:
 - `funasr-onnx-offline-punc`
 - `funasr-onnx-online-punc`
 - `funasr-onnx-offline-rtf`
+- `funasr-onnx-2pass`
+- `funasr-onnx-2pass-rtf`
 - `funasr-onnx-online-rtf`
+- `funasr-download-models`
 
 Notes:
 
 - Models are not installed by Homebrew.
-- A helper model download script is installed into the formula's `pkgshare`.
+- `funasr-download-models` downloads the recommended model directories.
 - macOS builds exclude ITN support.
-- The first release intentionally excludes the current 2-pass binaries.

@@ -45,6 +45,8 @@ class FunasrOnnx < Formula
       funasr-onnx-offline-punc
       funasr-onnx-online-punc
       funasr-onnx-offline-rtf
+      funasr-onnx-2pass
+      funasr-onnx-2pass-rtf
       funasr-onnx-online-rtf
     ]
 
@@ -73,7 +75,7 @@ class FunasrOnnx < Formula
     private_lib_dir.install_symlink "libglog.0.7.0.dylib" => "libglog.1.dylib"
     private_lib_dir.install_symlink "libglog.1.dylib" => "libglog.dylib"
 
-    pkgshare.install runtime_dir/"scripts/download_models.sh"
+    bin.install runtime_dir/"scripts/download_models.sh" => "funasr-download-models"
 
     installed_bins = targets.map { |target| bin/target }
     installed_libs = private_lib_dir.children.select { |path| path.file? && !path.symlink? }
@@ -94,8 +96,8 @@ class FunasrOnnx < Formula
       FunASR models are not installed by Homebrew.
       Download them separately and pass the model directories at runtime.
 
-      A helper download script is installed at:
-        #{opt_pkgshare}/download_models.sh
+      A helper download command is installed as:
+        #{opt_bin}/funasr-download-models
 
       macOS builds currently exclude ITN support.
       On macOS, treat this formula as supporting WAV/PCM-style inputs only.
@@ -111,10 +113,14 @@ class FunasrOnnx < Formula
       funasr-onnx-offline-punc
       funasr-onnx-online-punc
       funasr-onnx-offline-rtf
+      funasr-onnx-2pass
+      funasr-onnx-2pass-rtf
       funasr-onnx-online-rtf
     ].each do |command|
       assert_match "USAGE:", shell_output("#{bin}/#{command} --help")
     end
+
+    assert_match "FunASR Offline 模型一键下载脚本", shell_output("#{bin}/funasr-download-models --help")
   end
 
   private
