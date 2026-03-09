@@ -42,6 +42,7 @@ class FunasrOnnx < Formula
 
     system "cmake", "-S", runtime_dir, "-B", build_dir, *std_cmake_args,
                     "-DCMAKE_BUILD_TYPE=Release",
+                    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
                     "-DGPU=OFF",
                     "-DENABLE_GLOG=ON",
                     "-DENABLE_FST=ON",
