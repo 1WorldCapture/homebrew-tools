@@ -6,6 +6,12 @@ class FunasrOnnx < Formula
   sha256 "64696112eff23194cdb459b9a1d25c4bf21a21f7617c4cc7979fee6febd7eb28"
   license "MIT"
 
+  livecheck do
+    url "https://github.com/1WorldCapture/FunASR.git"
+    regex(/^ll-(\d+(?:\.\d+)+)$/i)
+    strategy :git
+  end
+
   resource "json" do
     url "https://github.com/nlohmann/json/archive/refs/tags/v3.11.2.tar.gz"
     sha256 "d69f9deb6a75e2580465c6c4c5111b89c4dc2fa94e3a85fcd2ffcd9a143d9273"

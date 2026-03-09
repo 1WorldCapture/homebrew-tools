@@ -92,9 +92,28 @@ homebrew-tools/
 └── README.md
 ```
 
+## 自动跟进上游版本
+
+仓库内提供了自动检查上游 FunASR `ll-x.y` 标签的流程：
+
+- GitHub Actions：`.github/workflows/funasr-upstream-sync.yml`
+- 同步脚本：`scripts/sync_funasr_release.py`
+
+默认行为：
+
+- 定时检查上游 `1WorldCapture/FunASR` 的最新 `ll-x.y` tag
+- 发现新 tag 后，自动更新：
+  - `Formula/funasr-onnx.rb` 的 `url` / `version` / `sha256`
+  - README 中记录的发布标签
+- 自动推送一个分支并创建 / 更新 PR
+
+也可以手动触发 workflow，并指定某个 tag 重新同步；默认不会回退到更旧的 tag，除非显式允许降级。
+
+> 注意：如果上游“移动已有 tag”而不是创建新 tag，这套流程会刷新当前 tag 的 `sha256` 并发起 PR，但更稳妥的做法仍然是发布新的不可变 tag。
+
 ## 维护说明
 
-如果后续需要发布新的 FunASR 版本，通常需要更新以下内容：
+如果需要手动发布新的 FunASR 版本，通常可以直接运行同步脚本，或手动更新以下内容：
 
 1. `Formula/funasr-onnx.rb` 中的：
    - `url`
@@ -104,6 +123,7 @@ homebrew-tools/
 3. 本地验证命令：
 
 ```bash
+python3 scripts/sync_funasr_release.py --dry-run
 brew install --build-from-source 1worldcapture/tools/funasr-onnx
 brew test funasr-onnx
 ```

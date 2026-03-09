@@ -1,0 +1,136 @@
+name: Sync FunASR upstream tags
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional ll-x.y tag to sync instead of the latest upstream tag"
+        required: false
+        type: string
+      allow_downgrade:
+        description: "Allow a manually specified older tag"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: funasr-upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out tap repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Detect and sync the target FunASR tag
+        id: sync
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          INPUT_ALLOW_DOWNGRADE: ${{ github.event.inputs.allow_downgrade }}
+        run: |
+          set -euo pipefail
+          args=()
+          if [[ -n "${INPUT_TAG}" ]]; then
+            args+=(--tag "${INPUT_TAG}")
+          fi
+          if [[ "${INPUT_ALLOW_DOWNGRADE}" == "true" ]]; then
+            args+=(--allow-downgrade)
+          fi
+          python3 scripts/sync_funasr_release.py "${args[@]}"
+
+      - name: Stop when no new version is available
+        if: steps.sync.outputs.updated != 'true'
+        run: echo "Formula already points at the latest supported upstream tag."
+
+      - name: Validate synced files
+        if: steps.sync.outputs.updated == 'true'
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/sync_funasr_release.py
+          ruby -c Formula/funasr-onnx.rb
+          git diff --check
+
+      - name: Commit and push the sync branch
+        if: steps.sync.outputs.updated == 'true'
+        id: commit
+        env:
+          TARGET_TAG: ${{ steps.sync.outputs.tag }}
+          TARGET_VERSION: ${{ steps.sync.outputs.version }}
+          UPDATE_REASON: ${{ steps.sync.outputs.reason }}
+        run: |
+          set -euo pipefail
+          branch="automation/funasr-onnx-${TARGET_TAG}"
+
+          case "${UPDATE_REASON}" in
+            checksum-refresh)
+              subject="refresh ${TARGET_TAG} checksum"
+              ;;
+            *)
+              subject="sync ${TARGET_TAG}"
+              ;;
+          esac
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "${branch}"
+          git add Formula/funasr-onnx.rb README.md
+          git commit -m "funasr-onnx: ${subject}"
+          git push --force --set-upstream origin "${branch}"
+
+          echo "branch=${branch}" >> "${GITHUB_OUTPUT}"
+          echo "pr_title=funasr-onnx: ${subject}" >> "${GITHUB_OUTPUT}"
+
+      - name: Create or update the pull request
+        if: steps.sync.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+          BRANCH: ${{ steps.commit.outputs.branch }}
+          TARGET_TAG: ${{ steps.sync.outputs.tag }}
+          TARGET_VERSION: ${{ steps.sync.outputs.version }}
+          PREVIOUS_TAG: ${{ steps.sync.outputs.previous_tag }}
+          TARGET_SHA256: ${{ steps.sync.outputs.sha256 }}
+          UPDATE_REASON: ${{ steps.sync.outputs.reason }}
+          PR_TITLE: ${{ steps.commit.outputs.pr_title }}
+        run: |
+          set -euo pipefail
+
+          title="${PR_TITLE}"
+          body=$(cat <<EOF
+          ## Summary
+          - detected upstream FunASR tag `${TARGET_TAG}`
+          - update reason: `${UPDATE_REASON}`
+          - updated `Formula/funasr-onnx.rb` and `README.md`
+          - refreshed source archive checksum to `${TARGET_SHA256}`
+
+          ## Upstream change
+          - previous tag: `${PREVIOUS_TAG}`
+          - new tag: `${TARGET_TAG}`
+
+          This PR was created automatically by `.github/workflows/funasr-upstream-sync.yml`.
+          EOF
+          )
+
+          pr_number="$(gh pr list --head "${BRANCH}" --base "${BASE_BRANCH}" --state open --json number --jq '.[0].number')"
+
+          if [[ -n "${pr_number}" ]]; then
+            gh pr edit "${pr_number}" --title "${title}" --body "${body}"
+          else
+            gh pr create --base "${BASE_BRANCH}" --head "${BRANCH}" --title "${title}" --body "${body}"
+          fi
