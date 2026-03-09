@@ -31,6 +31,9 @@ class FunasrOnnx < Formula
     end
 
     inreplace runtime_dir/"third_party/yaml-cpp/CMakeLists.txt",
+              "cmake_policy(SET CMP0012 OLD)",
+              "cmake_policy(SET CMP0012 NEW)"
+    inreplace runtime_dir/"third_party/yaml-cpp/CMakeLists.txt",
               "cmake_policy(SET CMP0015 OLD)",
               "cmake_policy(SET CMP0015 NEW)"
 
