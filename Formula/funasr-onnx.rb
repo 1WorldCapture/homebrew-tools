@@ -38,6 +38,7 @@ class FunasrOnnx < Formula
               "cmake_policy(SET CMP0015 NEW)"
 
     targets = %w[
+      funasr-onnx-offline
       funasr-onnx-offline-vad
       funasr-onnx-online-vad
       funasr-onnx-online-asr
