@@ -24,7 +24,7 @@ brew install 1worldcapture/tools/funasr-onnx
 `funasr-onnx` 会从源码构建 FunASR 的 ONNX Runtime CLI 工具。
 
 - 上游仓库：[`1WorldCapture/FunASR`](https://github.com/1WorldCapture/FunASR)
-- 发布标签：`ll-0.1`
+- 发布标签：`ll-0.2`
 - 构建目录：`runtime/onnxruntime`
 - 构建方式：CMake
 - 平台范围：**macOS**
