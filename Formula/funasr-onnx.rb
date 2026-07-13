@@ -1,9 +1,9 @@
 class FunasrOnnx < Formula
   desc "FunASR ONNX Runtime command-line tools for macOS"
   homepage "https://github.com/1WorldCapture/FunASR"
-  url "https://github.com/1WorldCapture/FunASR/archive/refs/tags/ll-0.1.tar.gz"
-  version "0.1"
-  sha256 "64696112eff23194cdb459b9a1d25c4bf21a21f7617c4cc7979fee6febd7eb28"
+  url "https://github.com/1WorldCapture/FunASR/archive/refs/tags/ll-0.2.tar.gz"
+  version "0.2"
+  sha256 "01ba9885c51f40d1caa81c8ac98f847e4a5d9cdea8c5fa00f2531a6cdaaef0ff"
   license "MIT"
 
   livecheck do
